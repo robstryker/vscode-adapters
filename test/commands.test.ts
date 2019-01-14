@@ -116,7 +116,7 @@ suite('Command Handler', () => {
                     id: context.id,
                     attributes: new Map<string, any>()
                 }
-            }
+            };
 
             expect(result).equals(response);
             expect(startStub).calledOnceWith(args);
@@ -134,7 +134,7 @@ suite('Command Handler', () => {
                     id: 'id',
                     attributes: new Map<string, any>()
                 }
-            }
+            };
 
             expect(result).equals(response);
             expect(startStub).calledOnceWith(args);

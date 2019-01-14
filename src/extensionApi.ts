@@ -30,7 +30,7 @@ export class CommandHandler {
             selectedServerId = context.id;
         }
 
-        if (this.serversData.serverStatus.get(selectedServerId) === ServerState.STOPPED) {
+        if (this.serversData.serverStatus.get(selectedServerId).state === ServerState.STOPPED) {
             const response = await this.client.startServerAsync({
                 params: {
                     serverType: selectedServerType.id,
@@ -57,7 +57,7 @@ export class CommandHandler {
             serverId = context.id;
         }
 
-        if (this.serversData.serverStatus.get(serverId) === ServerState.STARTED) {
+        if (this.serversData.serverStatus.get(serverId).state === ServerState.STARTED) {
             const status = await this.client.stopServerAsync({ id: serverId, force: true });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
@@ -80,7 +80,7 @@ export class CommandHandler {
             selectedServerType = context.type;
         }
 
-        if (this.serversData.serverStatus.get(serverId) === ServerState.STOPPED) {
+        if (this.serversData.serverStatus.get(serverId).state === ServerState.STOPPED) {
             const status = await this.client.deleteServerAsync({ id: serverId, type: selectedServerType });
             if (status.severity > 0) {
                 return Promise.reject(status.message);
@@ -104,7 +104,7 @@ export class CommandHandler {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
                 Array.from(this.serversData.servers.keys())
-                .filter(item => this.serversData.serverStatus.get(item) === ServerState.STARTED),
+                .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
                 { placeHolder: 'Select runtime/server to restart' }
             );
             context = this.serversData.servers.get(serverId);

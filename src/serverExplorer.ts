@@ -146,9 +146,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         if( (<Protocol.ServerState>item).deployableStates ) {
             // TODO
         } else if( (<Protocol.ServerHandle>item).id) {
-            const status: Protocol.ServerState = this.serverStatus.get(item.id);
+            const item2 : Protocol.ServerHandle = (<Protocol.ServerHandle>item);
+            const id1: string = item2.id;
+            const status: Protocol.ServerState = this.serverStatus.get(id1);
             const runState : number = (status == null ? 0 : status.state);
-            const treeItem: TreeItem = new TreeItem(`${item.id}:${item.type.visibleName}(${this.runStateEnum.get(runState)})`);
+            const treeItem: TreeItem = new TreeItem(`${id1}:${item2.type.visibleName}(${this.runStateEnum.get(runState)})`);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
             treeItem.contextValue =  this.runStateEnum.get(runState);
             return treeItem;

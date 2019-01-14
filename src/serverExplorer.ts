@@ -18,12 +18,11 @@ import {
     ServerState
 } from 'rsp-client';
 
-export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerHandle | Protocol.ServerState | Protocol.DeployableState> {
+export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.ServerState | Protocol.DeployableState> {
 
-    private _onDidChangeTreeData: EventEmitter<Protocol.ServerHandle | undefined> = new EventEmitter<Protocol.ServerHandle | undefined>();
-    readonly onDidChangeTreeData: Event<Protocol.ServerHandle | undefined> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: EventEmitter<Protocol.ServerState | undefined> = new EventEmitter<Protocol.ServerState | undefined>();
+    readonly onDidChangeTreeData: Event<Protocol.ServerState | undefined> = this._onDidChangeTreeData.event;
     private client: RSPClient;
-    public servers: Map<string, Protocol.ServerHandle> = new Map<string, Protocol.ServerHandle>();
     public serverStatus: Map<string, Protocol.ServerState> = new Map<string, Protocol.ServerState>();
     public serverOutputChannels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
     public runStateEnum: Map<number, string> = new Map<number, string>();
@@ -48,22 +47,19 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     }
 
     insertServer(handle): void {
-        this.servers.set(handle.id, handle);
         this.refresh();
     }
 
     updateServer(event: Protocol.ServerState): void {
-        const value = this.servers.get(event.server.id);
-        this.serverStatus.set(value.id, event);
-        this.refresh(value);
-        const channel: OutputChannel = this.serverOutputChannels.get(value.id);
+        this.serverStatus.set(event.server.id, event);
+        this.refresh(event);
+        const channel: OutputChannel = this.serverOutputChannels.get(event.server.id);
         if (event.state === ServerState.STARTING && channel) {
             channel.clear();
         }
     }
 
     removeServer(handle: Protocol.ServerHandle): void {
-        this.servers.delete(handle.id);
         this.serverStatus.delete(handle.id);
         this.refresh();
         const channel: OutputChannel = this.serverOutputChannels.get(handle.id);
@@ -117,7 +113,7 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
                         if (!value || value.trim().length === 0) {
                             return 'Cannot set empty server name';
                         }
-                        if (this.servers.get(value)) {
+                        if (this.serverStatus.get(value)) {
                             return 'Cannot set duplicate server name';
                         }
                         return null;
@@ -142,11 +138,10 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         });
     }
 
-    getTreeItem(item: Protocol.ServerHandle | Protocol.ServerState |  Protocol.DeployableState): TreeItem {
+    getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
         if( (<Protocol.ServerState>item).deployableStates ) {
-            // TODO
-        } else if( (<Protocol.ServerHandle>item).id) {
-            const item2 : Protocol.ServerHandle = (<Protocol.ServerHandle>item);
+            // item is a serverState
+            const item2 : Protocol.ServerHandle = (<Protocol.ServerState>item).server;
             const id1: string = item2.id;
             const status: Protocol.ServerState = this.serverStatus.get(id1);
             const runState : number = (status == null ? 0 : status.state);
@@ -154,12 +149,21 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
             treeItem.contextValue =  this.runStateEnum.get(runState);
             return treeItem;
+        } else if( (<Protocol.DeployableState>item).reference ) {
+            const item2 : Protocol.DeployableState = (<Protocol.DeployableState>item);
+            const treeItem: TreeItem = new TreeItem(`I am a deployment: ` + item2.state);
+            treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
+            treeItem.contextValue =  this.runStateEnum.get(item2.state);
+            return treeItem;
         }
     }
 
-    getChildren(element?:  Protocol.ServerHandle |  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerHandle[] | Protocol.ServerState[] | Protocol.DeployableState[] {
+    getChildren(element?:  Protocol.ServerState | Protocol.DeployableState):  Protocol.ServerState[] | Protocol.DeployableState[] {
         if (element === undefined) {
-            return Array.from(this.servers.values());
+            return Array.from(this.serverStatus.values());
+        }
+        if( (<Protocol.ServerState>element).deployableStates ) {
+            return (<Protocol.ServerState>element).deployableStates;
         }
     }
 }

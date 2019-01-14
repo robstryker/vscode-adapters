@@ -22,9 +22,9 @@ export class CommandHandler {
         let selectedServerId: string;
 
         if (context === undefined) {
-            selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            selectedServerId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to start' });
-            selectedServerType = this.serversData.servers.get(selectedServerId).type;
+            selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
         } else {
             selectedServerType = context.type;
             selectedServerId = context.id;
@@ -51,7 +51,7 @@ export class CommandHandler {
     async stopServer(context?: any): Promise<Protocol.Status> {
         let serverId: string;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to stop' });
         } else {
             serverId = context.id;
@@ -72,9 +72,9 @@ export class CommandHandler {
         let serverId: string;
         let selectedServerType: Protocol.ServerType;
         if (context === undefined) {
-            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to remove' });
-            selectedServerType = this.serversData.servers.get(serverId).type;
+            selectedServerType = this.serversData.serverStatus.get(serverId).server.type;
         } else {
             serverId = context.id;
             selectedServerType = context.type;
@@ -93,9 +93,9 @@ export class CommandHandler {
 
     async showServerOutput(context?: any): Promise<void> {
         if (context === undefined) {
-            const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.servers.keys()),
+            const serverId = await vscode.window.showQuickPick(Array.from(this.serversData.serverStatus.keys()),
                 { placeHolder: 'Select runtime/server to show ouput channel' });
-            context = this.serversData.servers.get(serverId);
+            context = this.serversData.serverStatus.get(serverId).server;
         }
         this.serversData.showOutput(context);
     }
@@ -103,11 +103,11 @@ export class CommandHandler {
     async restartServer(context?: any): Promise<void> {
         if (context === undefined) {
             const serverId: string = await vscode.window.showQuickPick(
-                Array.from(this.serversData.servers.keys())
+                Array.from(this.serversData.serverStatus.keys())
                 .filter(item => this.serversData.serverStatus.get(item).state === ServerState.STARTED),
                 { placeHolder: 'Select runtime/server to restart' }
             );
-            context = this.serversData.servers.get(serverId);
+            context = this.serversData.serverStatus.get(serverId).server;
         }
 
         const params: Protocol.LaunchParameters = {

@@ -26,8 +26,8 @@ export class CommandHandler {
                 { placeHolder: 'Select runtime/server to start' });
             selectedServerType = this.serversData.serverStatus.get(selectedServerId).server.type;
         } else {
-            selectedServerType = context.type;
-            selectedServerId = context.id;
+            selectedServerType = context.server.type;
+            selectedServerId = context.server.id;
         }
 
         if (this.serversData.serverStatus.get(selectedServerId).state === ServerState.STOPPED) {

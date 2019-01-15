@@ -123,11 +123,63 @@ export class CommandHandler {
         await this.client.startServerAsync(params);
     }
 
+    async addDeployment(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a server from the Servers view.');
+        } else {
+            serverId = context.id;
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            return this.serversData.addDeployment(serverHandle);
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
+    async removeDeployment(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        let deploymentId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a deployment from the Servers view.');
+        } else {
+            serverId = context.id;
+            deploymentId = context.path; // TODO this is clearly wrong?!
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            const states: Protocol.DeployableState[] = this.serversData.serverStatus.get(serverId).deployableStates;
+
+            return this.serversData.removeDeployment(serverHandle, states[0].reference); // TODO fix this
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
+    async fukllPublishServer(context?: any): Promise<Protocol.Status> {
+        let serverId: string;
+        if (context === undefined) {
+            return Promise.reject('Please select a server from the Servers view.');
+        } else {
+            serverId = context.id;
+        }
+
+        if (this.serversData) {
+            const serverHandle: Protocol.ServerHandle = this.serversData.serverStatus.get(serverId).server;
+            return this.serversData.publish(serverHandle, 2); // TODO use constant? Where is it?
+        } else {
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
+        }
+    }
+
     async addLocation(): Promise<Protocol.Status> {
         if (this.serversData) {
             return this.serversData.addLocation();
         } else {
-            return Promise.reject('Stack Protocol Server is starting, please try again later.');
+            return Promise.reject('Runtime Server Protocol (RSP) Server is starting, please try again later.');
         }
     }
 

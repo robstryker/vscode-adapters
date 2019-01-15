@@ -39,6 +39,11 @@ export function activate(context: vscode.ExtensionContext): Promise<ExtensionAPI
             vscode.commands.registerCommand('server.output', context => executeCommand(commandHandler.showServerOutput, commandHandler, context)),
             vscode.commands.registerCommand('servers.addLocation', () => executeCommand(commandHandler.addLocation, commandHandler)),
             vscode.commands.registerCommand('server.restart', context => executeCommand(commandHandler.restartServer, commandHandler, context)),
+
+            vscode.commands.registerCommand('server.addDeployment', context => executeCommand(commandHandler.addDeployment, commandHandler, context)),
+            vscode.commands.registerCommand('server.removeDeployment', context => executeCommand(commandHandler.removeDeployment, commandHandler, context)),
+            vscode.commands.registerCommand('server.publishFull', context => executeCommand(commandHandler.fukllPublishServer, commandHandler, context)),
+
             rspserverstdout,
             rspserverstderr
         ];

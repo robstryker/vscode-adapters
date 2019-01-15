@@ -156,8 +156,8 @@ suite('Server explorer', () => {
         };
 
         setup(() => {
-            serverExplorer.servers =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
-            getServersStub = sandbox.stub(serverExplorer.servers, 'get').returns(serverHandle);
+            serverExplorer.serverStatus =  new Map<string, Protocol.ServerHandle>([['server', serverHandle]]);
+            getServersStub = sandbox.stub(serverExplorer.serverStatus, 'get').returns(serverHandle);
             setStatusStub = sandbox.stub(serverExplorer.serverStatus, 'set');
         });
 

@@ -94,6 +94,45 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         this._onDidChangeTreeData.fire(data);
     }
 
+    addDeployment(server: Protocol.ServerHandle): Thenable<Protocol.Status> {
+        return window.showOpenDialog(<OpenDialogOptions>{
+            canSelectFiles: true,
+            canSelectMany: false,
+            canSelectFolders: false,
+            openLabel: 'Select Deployment'
+        }).then(async file => {
+            if (file && file.length === 1) {
+                const url = require('url');
+                const filePath : string = url.fileURLToPath(url)
+                const deployableRef : Protocol.DeployableReference = { label: filePath,  path: filePath};
+                const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+                const status = await this.client.addDeployable(req);
+                if (status.severity > 0) {
+                    return Promise.reject(status.message);
+                }
+                return status;
+            }
+        })
+    }
+
+    async removeDeployment(server: Protocol.ServerHandle, deployableRef: Protocol.DeployableReference): Promise<Protocol.Status> {
+        const req : Protocol.ModifyDeployableRequest = { server: server, deployable : deployableRef};
+        const status = await this.client.addDeployable(req);
+        if (status.severity > 0) {
+            return Promise.reject(status.message);
+        }
+        return status;
+    }
+
+    async publish(server: Protocol.ServerHandle, type: number): Promise<Protocol.Status> {
+        const req : Protocol.PublishServerRequest = { server: server, kind : type};
+        const status = await this.client.publish(req);
+        if (status.severity > 0) {
+            return Promise.reject(status.message);
+        }
+        return status;
+    }
+
     addLocation(): Thenable<Protocol.Status> {
         return window.showOpenDialog(<OpenDialogOptions>{
             canSelectFiles: false,

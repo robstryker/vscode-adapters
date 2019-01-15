@@ -8,7 +8,8 @@ import {
     EventEmitter,
     OutputChannel,
     workspace,
-    Uri
+    Uri,
+    TreeItemCollapsibleState
 } from 'vscode';
 import * as path from 'path';
 
@@ -36,11 +37,11 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
         this.runStateEnum.set(3, 'Stopping');
         this.runStateEnum.set(4, 'Stopped');
 
-        this.publishStateEnum.set(1, 'None');
+        this.publishStateEnum.set(1, 'Synchronized');
         this.publishStateEnum.set(2, 'Incremental');
         this.publishStateEnum.set(3, 'Full');
-        this.publishStateEnum.set(4, 'Add');
-        this.publishStateEnum.set(5, 'Remove');
+        this.publishStateEnum.set(4, 'Added');
+        this.publishStateEnum.set(5, 'Removed');
         this.publishStateEnum.set(6, 'Unknown');
 
         client.getServerHandles().then(servers => servers.forEach(server => this.insertServer(server)));
@@ -141,19 +142,26 @@ export class ServersViewTreeDataProvider implements TreeDataProvider< Protocol.S
     getTreeItem(item: Protocol.ServerState |  Protocol.DeployableState): TreeItem {
         if( (<Protocol.ServerState>item).deployableStates ) {
             // item is a serverState
-            const item2 : Protocol.ServerHandle = (<Protocol.ServerState>item).server;
-            const id1: string = item2.id;
-            const status: Protocol.ServerState = this.serverStatus.get(id1);
-            const runState : number = (status == null ? 0 : status.state);
-            const treeItem: TreeItem = new TreeItem(`${id1}:${item2.type.visibleName}(${this.runStateEnum.get(runState)})`);
+            const state : Protocol.ServerState = (<Protocol.ServerState>item);
+            const handle : Protocol.ServerHandle = state.server;
+            const id1: string = handle.id;
+            const runState2: string = this.runStateEnum.get(state.state);
+            const pubState: string = this.publishStateEnum.get(state.publishState);
+            const depStr = `${id1} (${runState2}) (${pubState})`;
+
+            const treeItem: TreeItem = new TreeItem(`${depStr}`, TreeItemCollapsibleState.Expanded);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  this.runStateEnum.get(runState);
+            treeItem.contextValue =  this.runStateEnum.get(state.state);
             return treeItem;
         } else if( (<Protocol.DeployableState>item).reference ) {
-            const item2 : Protocol.DeployableState = (<Protocol.DeployableState>item);
-            const treeItem: TreeItem = new TreeItem(`I am a deployment: ` + item2.state);
+            const state: Protocol.DeployableState = (<Protocol.DeployableState>item);
+            const id1: string = state.reference.label;
+            const runState: string = this.runStateEnum.get(state.state);
+            const pubState: string = this.publishStateEnum.get(state.publishState);
+            const depStr = `${id1} (${runState}) (${pubState})`;
+            const treeItem: TreeItem = new TreeItem(`${depStr}`);
             treeItem.iconPath = Uri.file(path.join(__dirname, '../../images/server-light.png'));
-            treeItem.contextValue =  this.runStateEnum.get(item2.state);
+            treeItem.contextValue =  this.runStateEnum.get(state.state);
             return treeItem;
         }
     }
